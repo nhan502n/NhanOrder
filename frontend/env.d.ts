@@ -5,5 +5,5 @@ declare namespace NodeJS {
       EMAIL_PASS: string;
       NEXT_PUBLIC_BASE_URL: string;
     }
-  }
+}
   
