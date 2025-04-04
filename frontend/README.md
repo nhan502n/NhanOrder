@@ -20,7 +20,7 @@ frontend/
 │   │   └── products/
 │   │       └── page.tsx             # /admin/products
 │   │
-│   ├── api/                         # API routes
+│   └── api/                         # API routes
 │       └── login/
 │            └── route.ts             # POST /api/login
 │   
@@ -36,11 +36,9 @@ frontend/
 │       └── styles.css
 │   
 │
-├── styles/                # CSS hoặc file tailwind config
+├── styles/                # all.css
 │   └── all.css
 │
-├── types/                 # Định nghĩa TypeScript types
-│   └── user.ts
 ├── env.d.ts               # Email
 ├── .env.local             # Biến môi trường (API keys, DB, ...)
 ├── next.config.js         # Cấu hình Next.js
