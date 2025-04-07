@@ -64,28 +64,32 @@ class UserController extends Controller
         return response()->json(['message' => 'Xác minh email thành công!'], 200);
     }
 
-    public function confirm($token)
+    public function confirm($userId, $token, Request $request)
     {
-        $user = User::where('verify_token', $token)->first();
+        // Tìm người dùng theo userId
+        $user = User::find($userId);
 
-        if ($user) {
+        if ($user && $user->verify_token === $token) {
             // Thực hiện xác minh tài khoản
             $user->email_verified_at = now();
             $user->verify_token = null; // Xóa token sau khi xác minh
             $user->save();
 
-            return view('emails.verify_result',['webURL' => '<a href="http://localhost:3000/">Truy cập trang web</a>']);
+            return view('emails.verify_result', ['webURL' => '<a href="http://localhost:3000">Đi đến Website</a>']);
         }
 
         return view('emails.verify_result', ['message' => 'Token không hợp lệ.']);
     }
 
 
-    public function reject($token)
-    {
-        $user = User::where('verify_token', $token)->first();
 
-        if ($user) {
+
+    public function reject($userId, $token, Request $request)
+    {
+        // Tìm người dùng theo userId
+        $user = User::find($userId);
+
+        if ($user && $user->verify_token === $token) {
             // Thực hiện hành động từ chối (ví dụ: xóa token)
             $user->verify_token = null; // Xóa token
             $user->save();
@@ -98,39 +102,41 @@ class UserController extends Controller
 
 
 
-    public function showVerifyPrompt($userId)
+
+
+    public function showVerifyPrompt($userId, $token)
     {
         // Tìm người dùng theo userId
         $user = User::find($userId);
 
-        // Kiểm tra nếu không tìm thấy người dùng
         if (!$user) {
             return view('emails.verify_result', ['message' => 'Người dùng không tồn tại.']);
         }
 
-        // Kiểm tra token
-        if ($user->verify_token === null) {
-            return view('emails.verify_result', ['message' => 'Token không hợp lệ hoặc đã hết hạn.']);
-        }
-
-        // Trường hợp 3: Người dùng đã xác minh rồi nhưng quay lại xác nhận
+        // Trường hợp người dùng đã xác minh
         if ($user->email_verified_at !== null) {
             return view('emails.verify_result', ['message' => 'Tài khoản của bạn đã được xác minh trước đó.']);
         }
 
-        // Tạo URL xác minh (confirm)
-        $confirmUrl = route('verify.confirm', ['userId' => $user->id]);
+        // Kiểm tra token
+        if ($user->verify_token !== $token) {
+            return view('emails.verify_result', ['message' => 'Token không hợp lệ hoặc đã hết hạn.']);
+        }
 
-        // Tạo URL từ chối (reject)
-        $rejectUrl = route('verify.reject', ['userId' => $user->id]);
 
-        // Trường hợp 1: Xác minh thành công, hiển thị thông báo xác nhận
+
+        // Tạo URL xác minh và từ chối
+        $confirmUrl = route('verify.confirm', ['userId' => $user->id, 'token' => $user->verify_token]);
+        $rejectUrl = route('verify.reject', ['userId' => $user->id, 'token' => $user->verify_token]);
+
         return view('emails.verify_prompt', [
             'user' => $user,
             'confirmUrl' => $confirmUrl,
             'rejectUrl' => $rejectUrl
         ]);
     }
+
+
 
 
 
@@ -159,22 +165,21 @@ class UserController extends Controller
     }
 
     // Tạo user mới và tạo token xác minh
-
     $user = User::create([
         'name' => $request->name,
         'email' => $request->email,
         'password' => Hash::make($request->password),
         'verify_token' => Hash::make(Str::random(64))
     ]);
+
     // Gửi email xác minh
 try {
-    $url = url('/verify-email/' . $user->id) . '?token=' . urlencode($user->verify_token);
+    $url = url('/verify-email/' . $user->verify_token);
     Mail::send('emails.verify', ['user' => $user, 'url' => $url], function ($message) use ($user) {
         $message->to($user->email)
                 ->subject('Xác minh email của bạn');
     });
 } catch (\Exception $e) {
-    Log::error('Mail error: ' . $e->getMessage());
     return response()->json(['error' => 'Không thể gửi email xác nhận: ' . $e->getMessage()], 500);
 }
 
