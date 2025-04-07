@@ -90,7 +90,7 @@
 <body>
 
     <!-- Logo của công ty -->
-    <img src="{{ asset('img/logo.png') }}" alt="{{ config('app.name') }}" class="logo">
+    <img src="{{ asset('img/NhanOrder-AB-1.png') }}" alt="{{ config('app.name') }}" class="logo">
 
     <h1>Có phải bạn vừa đăng ký tài khoản ở {{ config('app.name') }}?</h1>
 

@@ -15,24 +15,10 @@ use Illuminate\Support\Facades\Route;
 
 
 
-Route::get('/sendmail',[UserController::class,'sendTestEmail']);
-
 Route::middleware([CorsMiddleware::class])->group(function () {
     Route::post('/register', [UserController::class, 'register']);
-    // Thêm các route khác nếu cần
 });
-Route::get('/verify-email/{token}', function ($token) {
-    $user = User::where('verify_token', $token)->first();
 
-    if ($user) {
-        $user->email_verified_at = now();
-        $user->verify_token = null;
-        $user->save();
-        return redirect('/login')->with('status', 'Tài khoản đã xác nhận thành công.');
-    }
-
-    return redirect('/login')->with('error', 'Mã xác thực không hợp lệ.');
-});
 
 
 
