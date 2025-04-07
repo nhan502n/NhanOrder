@@ -21,7 +21,6 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 
 
 
-
 Route::get('/image/{filename}', function ($filename) {
     $path = public_path("img/" . $filename);
 
