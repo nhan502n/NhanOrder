@@ -8,6 +8,8 @@ const nextConfig = {
         { source: '/home', destination: '/' },
           { source: '/gio-hang', destination: '/cart' },
           { source: '/san-pham', destination: '/products' },
+          { source: '/dang-nhap', destination: '/login' },
+          { source: '/dang-ky', destination: '/register' },
           { source: '/san-pham/:slug', destination: '/products/:slug' },
 
           

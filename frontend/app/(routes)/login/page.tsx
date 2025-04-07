@@ -1,11 +1,19 @@
-"use client";  // Make sure this is a Client Component
+'use client';
 
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';  // Import useSearchParams
+import { useSearchParams } from 'next/navigation';
+import axios from 'axios';
 
 const LoginPage = () => {
   const searchParams = useSearchParams();
+  const [formData, setFormData] = useState({
+    Email: '',
+    Pass: ''
+  });
+
   const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const verified = searchParams.get('verified');
@@ -16,14 +24,92 @@ const LoginPage = () => {
     }
   }, [searchParams]);
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setMessage('');
+    setLoading(true);
+
+    try {
+      const res = await axios.post('http://127.0.0.1:8000/api/login', {
+        email: formData.Email,
+        password: formData.Pass
+      });
+
+      // Đăng nhập thành công
+      setMessage('Đăng nhập thành công!');
+      console.log('Thông tin người dùng:', res.data.user);
+      // Có thể chuyển hướng sang trang dashboard ở đây
+
+    } catch (err: any) {
+      if (err.response?.status === 403) {
+        setError('Tài khoản chưa được xác minh. Vui lòng kiểm tra email.');
+      } else if (err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else {
+        setError('Đã có lỗi xảy ra. Vui lòng thử lại.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div>
+    <main>
       {message && <div className="alert alert-success">{message}</div>}
-      <h2>Đăng Nhập</h2>
-      <form>
-        {/* Form đăng nhập */}
-      </form>
-    </div>
+      {error && <div className="error text-red-500 mt-2">{error}</div>}
+
+      <div className="container">
+        <input type="checkbox" id="Log-Reg" defaultChecked />
+        <div className="box-login">
+          <div className="form-action">
+            <div className="form-register">
+              <form onSubmit={handleSubmit}>
+                <div className="dangnhap">
+                <div className="Register" style={{ fontWeight: 'bolder' }}>
+                    Đăng Nhập
+                  </div>
+                  <label htmlFor="Log-Reg">
+                    <a href="/dang-ky">
+                      <div className="Login">Đăng Ký</div>
+                    </a>
+                  </label>
+                  
+                </div>
+
+                <p>Email</p>
+                <input
+                  type="text"
+                  placeholder="Email:"
+                  name="Email"
+                  value={formData.Email}
+                  onChange={handleChange}
+                />
+
+                <p>Mật khẩu</p>
+                <input
+                  type="password"
+                  placeholder="Mật Khẩu:"
+                  name="Pass"
+                  value={formData.Pass}
+                  onChange={handleChange}
+                />
+
+                <br />
+                <a href="/asm/quen-mat-khau">Quên mật khẩu</a><br />
+                <button type="submit" name="dangnhap" disabled={loading}>
+                  {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+                </button><br />
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
   );
 };
 

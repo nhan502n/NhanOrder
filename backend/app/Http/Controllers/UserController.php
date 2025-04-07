@@ -30,16 +30,16 @@ class UserController extends Controller
             return response()->json(['error' => 'Email hoặc mật khẩu không đúng'], 401);
         }
 
-        // ✅ Tạo token đúng cách
-        $token = $user->createToken('auth_token')->plainTextToken;
-
+        // Kiểm tra xác minh email
+        if (is_null($user->email_verified_at)) {
+            return response()->json(['error' => 'Tài khoản chưa được xác minh. Vui lòng kiểm tra email.'], 403);
+        }
 
         return response()->json([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
             'user' => $user
         ], 200);
     }
+
 
     public function index(){
         $userList = User::all();
@@ -62,6 +62,58 @@ class UserController extends Controller
         $user->save();
 
         return response()->json(['message' => 'Xác minh email thành công!'], 200);
+    }
+
+    public function confirm($token)
+    {
+        $user = User::where('verify_token', $token)->first();
+
+        if ($user) {
+            // Thực hiện xác minh tài khoản
+            $user->email_verified_at = now();
+            $user->verify_token = null; // Xóa token sau khi xác minh
+            $user->save();
+
+            return view('emails.verify_result', ['message' => 'Email của bạn đã được xác minh thành công.']);
+        }
+
+        return view('emails.verify_result', ['message' => 'Token không hợp lệ.']);
+    }
+
+
+    public function reject($token)
+    {
+        $user = User::where('verify_token', $token)->first();
+
+        if ($user) {
+            // Thực hiện hành động từ chối (ví dụ: xóa token)
+            $user->verify_token = null; // Xóa token
+            $user->save();
+
+            return view('emails.verify_result', ['message' => 'Bạn đã từ chối xác minh email.']);
+        }
+
+        return view('emails.verify_result', ['message' => 'Token không hợp lệ.']);
+    }
+
+
+
+    public function showVerifyPrompt($token)
+    {
+        $user = User::where('verify_token', $token)->first();
+
+        if (!$user) {
+            return view('emails.verify_result', ['message' => 'Token không hợp lệ hoặc đã hết hạn.']);
+        }
+
+        // Tạo URL xác minh (confirm)
+        $confirmUrl = route('verify.confirm', ['token' => $token]);
+
+        // Tạo URL từ chối (reject)
+        $rejectUrl = route('verify.reject', ['token' => $token]);
+
+        // Truyền các URL và user vào view
+        return view('emails.verify_prompt', ['user' => $user, 'confirmUrl' => $confirmUrl, 'rejectUrl' => $rejectUrl]);
     }
 
 
@@ -89,7 +141,7 @@ class UserController extends Controller
         'name' => $request->name,
         'email' => $request->email,
         'password' => Hash::make($request->password),
-        'verify_token' => Str::random(32)
+        'verify_token' => Hash::make(Str::random(64))
     ]);
 
     // Gửi email xác minh

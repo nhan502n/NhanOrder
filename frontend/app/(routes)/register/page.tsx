@@ -1,26 +1,34 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-// Định nghĩa kiểu dữ liệu
 type FormDataType = {
   name: string;
   email: string;
   password: string;
+  recaptcha: string;
 };
 
 type ErrorType = {
   name?: string[];
   email?: string[];
   password?: string[];
+  recaptcha?: string[];
 };
+
+declare global {
+  interface Window {
+    grecaptcha: any;
+  }
+}
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState<FormDataType>({
     name: '',
     email: '',
-    password: ''
+    password: '',
+    recaptcha: ''
   });
 
   const [message, setMessage] = useState('');
@@ -37,12 +45,25 @@ export default function RegisterPage() {
     setError({});
     setLoading(true);
 
+    // Get the reCAPTCHA token before submitting the form
+    const recaptchaToken = window.grecaptcha.getResponse();
+    if (!recaptchaToken) {
+      setError((prev) => ({ ...prev, recaptcha: ['Please complete the reCAPTCHA.'] }));
+      setLoading(false);
+      return;
+    }
+
     try {
-      const res = await axios.post('http://127.0.0.1:8000/api/register', formData);
+      const res = await axios.post('http://127.0.0.1:8000/api/register', {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        recaptcha: recaptchaToken
+      });
       setMessage(res.data.message);
-      setFormData({ name: '', email: '', password: '' }); // reset form nếu muốn
+      setFormData({ name: '', email: '', password: '', recaptcha: '' });
     } catch (err: any) {
-      if (err.response && err.response.data.error) {
+      if (err.response?.data?.error) {
         setError(err.response.data.error);
       }
     } finally {
@@ -50,60 +71,82 @@ export default function RegisterPage() {
     }
   };
 
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://www.google.com/recaptcha/enterprise.js?render=6Lf2egwrAAAAAEPFqMJM5lqV3YRZXqUBbGKLMnc3';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      if (window.grecaptcha) {
+        console.log("reCAPTCHA script loaded successfully.");
+      }
+    };
+    document.body.appendChild(script);
+  }, []);
+
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
-      <h1 className="text-xl font-semibold mb-4">Đăng ký</h1>
+    <main>
+      <div className="container">
+        <input type="checkbox" id="Log-Reg" defaultChecked />
+        <div className="box-login">
+          <div className="form-action">
+            <div className="form-register">
+              <form onSubmit={handleSubmit}>
+                <div className="dangnhap">
+                  <label htmlFor="Log-Reg">
+                    <a href="dang-nhap">
+                      <div className="Login">Đăng Nhập</div>
+                    </a>
+                  </label>
+                  <div className="Register" style={{ fontWeight: 'bolder' }}>
+                    Đăng Ký
+                  </div>
+                </div>
 
-      {message && <p className="text-green-600 mb-4">{message}</p>}
+                <p>Tên người dùng</p>
+                <input
+                  type="text"
+                  placeholder="Nhập tên người dùng:"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                />
+                {error?.name && <div className="error">{error.name[0]}</div>}
 
-      <form onSubmit={handleSubmit}>
-        {/* Tên đăng nhập */}
-        <div className="mb-4">
-          <label className="block mb-1">Tên đăng nhập</label>
-          <input
-            type="text"
-            name="name"
-            className="w-full border p-2 rounded"
-            value={formData.name}
-            onChange={handleChange}
-          />
-          {error?.name && <p className="text-red-500 text-sm">{error.name[0]}</p>}
+                <p>Email</p>
+                <input
+                  type="text"
+                  placeholder="Email:"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+                {error?.email && <div className="error">{error.email[0]}</div>}
+
+                <p>Mật khẩu</p>
+                <input
+                  type="password"
+                  placeholder="Mật Khẩu:"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+                {error?.password && <div className="error">{error.password[0]}</div>}
+
+                <div className="g-recaptcha" data-sitekey="6Lf2egwrAAAAAEPFqMJM5lqV3YRZXqUBbGKLMnc3"></div>
+
+                {error?.recaptcha && <div className="error">{error.recaptcha[0]}</div>}
+
+                {message && <div className="text-green-600 mt-2">{message}</div>}
+                <button type="submit" disabled={loading} name="dangky">
+                  {loading ? 'Đang đăng ký...' : 'Đăng ký'}
+                </button>
+              </form>
+              <br />
+            </div>
+          </div>
         </div>
-
-        {/* Email */}
-        <div className="mb-4">
-          <label className="block mb-1">Email</label>
-          <input
-            type="email"
-            name="email"
-            className="w-full border p-2 rounded"
-            value={formData.email}
-            onChange={handleChange}
-          />
-          {error?.email && <p className="text-red-500 text-sm">{error.email[0]}</p>}
-        </div>
-
-        {/* Mật khẩu */}
-        <div className="mb-4">
-          <label className="block mb-1">Mật khẩu</label>
-          <input
-            type="password"
-            name="password"
-            className="w-full border p-2 rounded"
-            value={formData.password}
-            onChange={handleChange}
-          />
-          {error?.password && <p className="text-red-500 text-sm">{error.password[0]}</p>}
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition disabled:opacity-50"
-        >
-          {loading ? 'Đang đăng ký...' : 'Đăng ký'}
-        </button>
-      </form>
-    </div>
+      </div>
+    </main>
   );
 }

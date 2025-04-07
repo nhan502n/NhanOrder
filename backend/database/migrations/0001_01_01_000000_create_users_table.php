@@ -20,6 +20,7 @@ return new class extends Migration
             $table->enum('role',['admin','user'])->default('user');
             $table->timestamps();
             $table->softDeletes();
+            $table->string('verify_token', 100)->nullable()->unique();
         });
     }
 

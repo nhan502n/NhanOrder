@@ -13,7 +13,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "typeRoots": ["./src/types", "./node_modules/@types"],
+    "typeRoots": ["./node_modules/@types"],  // Point to the @types directory
     "plugins": [
       {
         "name": "next"
@@ -23,6 +23,12 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/products/ProductList.js"],
+  "include": [
+    "next-env.d.ts", 
+    "**/*.ts", 
+    "**/*.tsx", 
+    ".next/types/**/*.ts", 
+    "app/products/ProductList.js"
+  ],
   "exclude": ["node_modules"]
 }

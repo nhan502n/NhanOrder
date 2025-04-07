@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 
 
-Route::get('/home', 'HomeController@index')->middleware('verified');
 
 Route::get('/sendmail',[UserController::class,'sendTestEmail']);
 
