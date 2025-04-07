@@ -7,28 +7,19 @@ type FormDataType = {
   name: string;
   email: string;
   password: string;
-  recaptcha: string;
 };
 
 type ErrorType = {
   name?: string[];
   email?: string[];
   password?: string[];
-  recaptcha?: string[];
 };
-
-declare global {
-  interface Window {
-    grecaptcha: any;
-  }
-}
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState<FormDataType>({
     name: '',
     email: '',
-    password: '',
-    recaptcha: ''
+    password: ''
   });
 
   const [message, setMessage] = useState('');
@@ -45,23 +36,14 @@ export default function RegisterPage() {
     setError({});
     setLoading(true);
 
-    // Get the reCAPTCHA token before submitting the form
-    const recaptchaToken = window.grecaptcha.getResponse();
-    if (!recaptchaToken) {
-      setError((prev) => ({ ...prev, recaptcha: ['Please complete the reCAPTCHA.'] }));
-      setLoading(false);
-      return;
-    }
-
     try {
       const res = await axios.post('http://127.0.0.1:8000/api/register', {
         name: formData.name,
         email: formData.email,
-        password: formData.password,
-        recaptcha: recaptchaToken
+        password: formData.password
       });
       setMessage(res.data.message);
-      setFormData({ name: '', email: '', password: '', recaptcha: '' });
+      setFormData({ name: '', email: '', password: '' });
     } catch (err: any) {
       if (err.response?.data?.error) {
         setError(err.response.data.error);
@@ -70,19 +52,6 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://www.google.com/recaptcha/enterprise.js?render=6Lf2egwrAAAAAEPFqMJM5lqV3YRZXqUBbGKLMnc3';
-    script.async = true;
-    script.defer = true;
-    script.onload = () => {
-      if (window.grecaptcha) {
-        console.log("reCAPTCHA script loaded successfully.");
-      }
-    };
-    document.body.appendChild(script);
-  }, []);
 
   return (
     <main>
@@ -132,10 +101,6 @@ export default function RegisterPage() {
                   onChange={handleChange}
                 />
                 {error?.password && <div className="error">{error.password[0]}</div>}
-
-                <div className="g-recaptcha" data-sitekey="6Lf2egwrAAAAAEPFqMJM5lqV3YRZXqUBbGKLMnc3"></div>
-
-                {error?.recaptcha && <div className="error">{error.recaptcha[0]}</div>}
 
                 {message && <div className="text-green-600 mt-2">{message}</div>}
                 <button type="submit" disabled={loading} name="dangky">
