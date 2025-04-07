@@ -116,9 +116,10 @@ class UserController extends Controller
 
     public function showVerifyPrompt($userId, $token)
     {
+        $decodedUserId = (int) base64_decode($userId);  // Đổi tên biến tương ứng
 
         // Tìm người dùng và kiểm tra token
-        $user = User::find($userId);
+        $user = User::find($decodedUserId);
 
         if (!$user) {
             return view('emails.verify_result', ['message' => 'Người dùng không tồn tại.']);
@@ -135,8 +136,8 @@ class UserController extends Controller
         }
 
         // Tạo URL xác minh và từ chối
-        $confirmUrl = route('verify.confirm', ['userId' => $user->id, 'token' => $user->verify_token]);
-        $rejectUrl = route('verify.reject', ['userId' => $user->id, 'token' => $user->verify_token]);
+        $confirmUrl = route('verify.confirm', ['userId' => base64_encode($user->id), 'token' => $user->verify_token]);
+        $rejectUrl = route('verify.reject', ['userId' => base64_encode($user->id), 'token' => $user->verify_token]);
 
         return view('emails.verify_prompt', [
             'user' => $user,
@@ -178,7 +179,7 @@ class UserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'verify_token' => Str::random(64)
+            'verify_token' => Str::random(100)
         ]);
 
         // Mã hóa userId
