@@ -57,7 +57,7 @@
 </head>
 <body>
     <div class="email-wrapper">
-        <h1>{{ $Noti }}</h1>
+        {{-- <h1>{{ $Noti }}</h1> --}}
 
         @if(isset($message))
             <p>{{ $message }}</p>

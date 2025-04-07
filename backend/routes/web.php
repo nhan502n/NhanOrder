@@ -21,11 +21,10 @@ route::get('/dang-nhap',[UserController::class,'login']);
 route::get('/dang-ky',[UserController::class,'register']);
 
 Route::post('/register', [UserController::class, 'register']);
+
 Route::get('/verify-email/{userId}/{token}', [UserController::class, 'verifyEmail'])->name('verify.email');
-// Route::get('/verify-account/{userId}', [UserController::class, 'showVerifyAccountPage'])->name('verify.account');
-// Route::post('/verify-account', [UserController::class, 'verifyAccount'])->name('verify.account.submit');
-// Route::get('/verify-reject/{token}', [UserController::class, 'rejectVerify'])->name('verify.reject');
 Route::get('/verify/{userId}/{token}', [UserController::class, 'showVerifyPrompt'])->name('verify.prompt');
 Route::get('/verify/confirm/{userId}/{token}', [UserController::class, 'confirm'])->name('verify.confirm');
 Route::get('/verify/reject/{userId}/{token}', [UserController::class, 'reject'])->name('verify.reject');
+// Route::get('/verify/{token}/{userId}', [UserController::class, 'hi'])->name('verify.prompt');
 

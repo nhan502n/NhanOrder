@@ -66,47 +66,58 @@ class UserController extends Controller
 
     public function confirm($userId, $token, Request $request)
     {
-        // Tìm người dùng theo userId
-        $user = User::find($userId);
+        // Giải mã userId từ base64
+        $decodedUserId = (int) base64_decode($userId);  // Đổi tên biến tương ứng
+
+        // Tìm người dùng và kiểm tra token
+        $user = User::find($decodedUserId);
 
         if ($user && $user->verify_token === $token) {
-            // Thực hiện xác minh tài khoản
+            // Xác minh tài khoản
             $user->email_verified_at = now();
             $user->verify_token = null; // Xóa token sau khi xác minh
             $user->save();
 
-            return view('emails.verify_result', ['webURL' => '<a href="http://localhost:3000">Đi đến Website</a>']);
+            return view('emails.verify_result', ['message' => 'Xác minh thành công!']);
         }
 
         return view('emails.verify_result', ['message' => 'Token không hợp lệ.']);
     }
+
 
 
 
 
     public function reject($userId, $token, Request $request)
     {
-        // Tìm người dùng theo userId
-        $user = User::find($userId);
+        $decodedUserId = (int) base64_decode($userId);  // Đổi tên biến tương ứng
+
+        // Tìm người dùng và kiểm tra token
+        $user = User::find($decodedUserId);
 
         if ($user && $user->verify_token === $token) {
-            // Thực hiện hành động từ chối (ví dụ: xóa token)
             $user->verify_token = null; // Xóa token
             $user->save();
 
-            return view('emails.verify_result', ['message' => 'Bạn đã từ chối xác minh email.']);
+            return view('emails.verify_result');
         }
 
         return view('emails.verify_result', ['message' => 'Token không hợp lệ.']);
     }
+    public function hi( $userId, $token)
+    {
+        echo $userId;
+        echo $token;
 
+    }
 
 
 
 
     public function showVerifyPrompt($userId, $token)
     {
-        // Tìm người dùng theo userId
+
+        // Tìm người dùng và kiểm tra token
         $user = User::find($userId);
 
         if (!$user) {
@@ -122,8 +133,6 @@ class UserController extends Controller
         if ($user->verify_token !== $token) {
             return view('emails.verify_result', ['message' => 'Token không hợp lệ hoặc đã hết hạn.']);
         }
-
-
 
         // Tạo URL xác minh và từ chối
         $confirmUrl = route('verify.confirm', ['userId' => $user->id, 'token' => $user->verify_token]);
@@ -150,42 +159,48 @@ class UserController extends Controller
 
 
     public function register(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'name' => 'required|string|max:255|unique:users,name',
-        'email' => 'required|string|email|max:255|unique:users,email',
-        'password' => 'required|string|min:6',
-    ], [
-        'name.unique' => 'Tên tài khoản đã tồn tại.',
-        'email.unique' => 'Email đã tồn tại.',
-    ]);
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255|unique:users,name',
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'password' => 'required|string|min:6',
+        ], [
+            'name.unique' => 'Tên tài khoản đã tồn tại.',
+            'email.unique' => 'Email đã tồn tại.',
+        ]);
 
-    if ($validator->fails()) {
-        return response()->json(['error' => $validator->errors()], 400);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
+        // Tạo user mới và tạo token xác minh
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'verify_token' => Str::random(64)
+        ]);
+
+        // Mã hóa userId
+        $userId = base64_encode($user->id);  // Đổi tên từ $hashedUserId thành $userId
+
+        // Gửi email xác minh
+        try {
+            $url = url('/verify/' . $userId . '/' . urlencode($user->verify_token));
+
+            // Gửi email xác minh
+            Mail::send('emails.verify', ['user' => $user, 'url' => $url], function ($message) use ($user) {
+                $message->to($user->email)
+                        ->subject('Xác minh email của bạn');
+            });
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Không thể gửi email xác nhận: ' . $e->getMessage()], 500);
+        }
+
+        return response()->json(['message' => 'Đăng ký thành công! Kiểm tra email để xác nhận.', 'user' => $user], 201);
     }
 
-    // Tạo user mới và tạo token xác minh
-    $user = User::create([
-        'name' => $request->name,
-        'email' => $request->email,
-        'password' => Hash::make($request->password),
-        'verify_token' => Hash::make(Str::random(64))
-    ]);
 
-    // Gửi email xác minh
-try {
-    $url = url('/verify-email/' . $user->verify_token);
-    Mail::send('emails.verify', ['user' => $user, 'url' => $url], function ($message) use ($user) {
-        $message->to($user->email)
-                ->subject('Xác minh email của bạn');
-    });
-} catch (\Exception $e) {
-    return response()->json(['error' => 'Không thể gửi email xác nhận: ' . $e->getMessage()], 500);
-}
-
-
-    return response()->json(['message' => 'Đăng ký thành công! Kiểm tra email để xác nhận.', 'user' => $user], 201);
-}
 
 
     public function update(Request $request, string $id) {

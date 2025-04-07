@@ -93,7 +93,7 @@
 
         <p>Vui lòng nhấp vào liên kết dưới đây để xác minh email của bạn và hoàn tất việc đăng ký:</p>
 
-        <a href="{{ url('/verify/' . $user->id . '/' . urlencode($user->verify_token)) }}" class="btn">Đi đến xác minh</a>
+        <a href="{{ $url }}" class="btn">Đi đến xác minh</a>
 
         <p>Nếu bạn không yêu cầu tạo tài khoản, vui lòng bỏ qua email này.</p>
 
