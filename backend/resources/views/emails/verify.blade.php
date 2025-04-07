@@ -80,6 +80,9 @@
                 font-size: 16px;
             }
         }
+        .email-wrapper > a{
+            color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -89,7 +92,6 @@
         <p>Chào {{ $user->name }},</p>
 
         <p>Vui lòng nhấp vào liên kết dưới đây để xác minh email của bạn và hoàn tất việc đăng ký:</p>
-
         <a href="{{ url('/verify/' . urlencode($user->verify_token)) }}" class="btn">Đi đến xác minh</a>
 
         <p>Nếu bạn không yêu cầu tạo tài khoản, vui lòng bỏ qua email này.</p>
@@ -99,7 +101,7 @@
         <div class="footer">
             <p>Bạn nhận được email này vì bạn đã đăng ký tài khoản tại {{ config('app.name') }}.</p>
             <p>Vui lòng không trả lời email này. Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi.</p>
-            <p><a href="{{ url('/') }}">Truy cập trang web</a></p>
+            <p><a href="http://localhost:3000/">Truy cập trang web</a></p>
         </div>
     </div>
 </body>

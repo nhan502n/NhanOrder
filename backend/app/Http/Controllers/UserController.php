@@ -100,10 +100,18 @@ class UserController extends Controller
 
     public function showVerifyPrompt($token)
     {
+        // Tìm người dùng theo token xác minh
         $user = User::where('verify_token', $token)->first();
 
         if (!$user) {
+            // Trường hợp 2: Token không hợp lệ hoặc hết hạn
             return view('emails.verify_result', ['message' => 'Token không hợp lệ hoặc đã hết hạn.']);
+        }
+
+        // Kiểm tra nếu người dùng đã xác minh tài khoản
+        if ($user->email_verified_at) {
+            // Trường hợp 3: Người dùng đã xác minh rồi nhưng quay lại xác nhận
+            return view('emails.verify_result', ['message' => 'Tài khoản của bạn đã được xác minh trước đó.']);
         }
 
         // Tạo URL xác minh (confirm)
@@ -112,9 +120,15 @@ class UserController extends Controller
         // Tạo URL từ chối (reject)
         $rejectUrl = route('verify.reject', ['token' => $token]);
 
-        // Truyền các URL và user vào view
-        return view('emails.verify_prompt', ['user' => $user, 'confirmUrl' => $confirmUrl, 'rejectUrl' => $rejectUrl]);
+        // Trường hợp 1: Xác minh thành công, hiển thị thông báo xác nhận
+        return view('emails.verify_prompt', [
+            'user' => $user,
+            'confirmUrl' => $confirmUrl,
+            'rejectUrl' => $rejectUrl
+        ]);
     }
+
+
 
 
 
