@@ -57,7 +57,7 @@
 </head>
 <body>
     <div class="email-wrapper">
-        <h1>Xác minh tài khoản của bạn tại {{ config('app.name') }}</h1>
+        <h1>{{ $Noti }}</h1>
 
         @if(isset($message))
             <p>{{ $message }}</p>
