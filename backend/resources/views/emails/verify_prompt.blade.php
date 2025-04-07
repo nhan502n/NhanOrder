@@ -56,7 +56,7 @@
         }
     </style>
     <!-- Include the Google reCAPTCHA script -->
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script src="https://www.google.com/recaptcha/enterprise.js?render=6Lf2egwrAAAAAEPFqMJM5lqV3YRZXqUBbGKLMnc3" async defer></script>
 </head>
 <body>
 
@@ -68,7 +68,7 @@
     </div>
 
     <!-- reCAPTCHA widget -->
-    <div class="g-recaptcha" data-sitekey="6LeQcAwrAAAAACBUenZY_AfLq7TjlDIAKiEgonbb"></div>
+    <div class="g-recaptcha" data-sitekey="6Lf2egwrAAAAAEPFqMJM5lqV3YRZXqUBbGKLMnc3"></div>
 
     <!-- Add your form action for verifying CAPTCHA if necessary -->
     <button type="submit" onclick="submitForm()">Xác nhận</button>
