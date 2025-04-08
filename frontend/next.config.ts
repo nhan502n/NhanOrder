@@ -7,8 +7,6 @@ const nextConfig = {
         { source: '/trang-chu', destination: '/' },
         { source: '/home', destination: '/' },
           { source: '/gio-hang', destination: '/cart' },
-          { source: '/thanh-toan', destination: '/check-out' },
-          { source: '/thanh-toan/xac-nhan-dat-hang', destination: '/check-out/order-confirm' },
           { source: '/san-pham', destination: '/products' },
           { source: '/dang-nhap', destination: '/login' },
           { source: '/dang-ky', destination: '/register' },

@@ -1,88 +1,86 @@
 <?php
 
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\OrderController;
-use App\Http\Controllers\PageController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\UserController;
-use App\Http\Middleware\CorsMiddleware;
-use App\Models\Category;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PageController;
 
+/*
+|--------------------------------------------------------------------------
+| Public API routes
+|--------------------------------------------------------------------------
+*/
 
-Route::middleware([CorsMiddleware::class])->group(function () {
+Route::middleware('api')->group(function () {
+    // Auth
     Route::post('/register', [UserController::class, 'register']);
+    Route::post('/login', [UserController::class, 'login']);
+    Route::get('/verify-email', [UserController::class, 'verifyEmail']);
+
+    // Trang chủ
+    Route::get('/', [PageController::class, 'home']);
+    Route::get('/trang-chu', [PageController::class, 'home']);
+
+    // Hình ảnh sản phẩm
+    Route::get('/image/{filename}', function ($filename) {
+        $path = public_path("img/" . $filename);
+        if (!file_exists($path)) {
+            return response()->json(['error' => 'File không tồn tại'], 404);
+        }
+        return Response::file($path);
+    });
+
+    // Sản phẩm
+    Route::get('/san-pham', [ProductController::class, 'getProducts']);
+    Route::get('/san-pham-moi', [ProductController::class, 'getNewProducts']);
+    Route::get('/san-pham-khuyen-mai', [ProductController::class, 'hotPromotion']);
+    Route::get('/san-pham/{slug}', [ProductController::class, 'show']); // Xem chi tiết theo slug
+
+    // Danh mục
+    Route::get('/category', [CategoryController::class, 'getCategories']);
+
+    // Đặt hàng (không cần auth nếu cho phép đặt hàng không đăng nhập)
+    Route::post('/order', [OrderController::class, 'add']);
 });
 
 
+/*
+|--------------------------------------------------------------------------
+| Protected API routes
+|--------------------------------------------------------------------------
+*/
 
-Route::get('/image/{filename}', function ($filename) {
-    $path = public_path("img/" . $filename);
+Route::middleware(['auth:sanctum'])->group(function () {
+    // Thông tin user đang login
+    Route::get('/me', function (Request $request) {
+        return response()->json($request->user());
+    });
 
-    if (!file_exists($path)) {
-        return response()->json(['error' => 'File không tồn tại'], 404);
-    }
+    // CRUD User (dành cho admin hoặc quản lý)
+    Route::get('/user', [UserController::class, 'index']);
+    Route::get('/user/{id}', [UserController::class, 'show']);
+    Route::put('/user/{id}', [UserController::class, 'update']);
+    Route::delete('/user/{id}', [UserController::class, 'destroy']);
 
-    return Response::file($path);
-});
+    // CRUD sản phẩm
+    Route::post('/san-pham', [ProductController::class, 'addProduct']);
+    Route::patch('/san-pham/{id}', [ProductController::class, 'update']);
+    Route::delete('/san-pham/{id}', [ProductController::class, 'destroy']);
 
-Route::get('/',[PageController::class,'home']);
-Route::get('/trang-chu',[PageController::class,'home']);
+    // CRUD danh mục
+    Route::post('/category', [CategoryController::class, 'store']);
+    Route::patch('/category/{id}', [CategoryController::class, 'update']);
+    Route::delete('/category/{id}', [CategoryController::class, 'destroy']);
 
-
-Route::post('/login', [UserController::class, 'login']);
-
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return response()->json($request->user());
-});
-// route::get('user',[ProductController::class,'login']);
-
-Route::post('/register', [UserController::class, 'register']);
-Route::get('/verify-email', [UserController::class, 'verifyEmail']);
-// route::put('user/{id}',function($id){
-//     return response()->json(["message"=>"user $id updated!"]);
-// });
-// route::delete('user/{id}',function($id){
-//     return response()->json(["message"=>"user $id deleted!"]);
-// });
-
-route::get('/category',[CategoryController::class,'getCategories']);
-route::post('category',[CategoryController::class,'store']);
-Route::delete('category/{id}',[CategoryController::class,'destroy']);
-Route::patch('category/{id}',[CategoryController::class,'update']);
-
-Route::get('/chi-tiet-san-pham/{id}',[ProductController::class,'show']);
-route::post('chi-tiet-san-pham',[ProductController::class,'show']);
-route::delete('chi-tiet-san-pham/{id}',[ProductController::class,'show']);
-
-Route::get('/san-pham', [ProductController::class, 'getProducts']);
-Route::post('/san-pham', [ProductController::class, 'addProduct']);
-Route::get('/san-pham/{slug}', [ProductController::class, 'show']);
-Route::delete('/san-pham/{id}', [ProductController::class, 'destroy']);
-Route::patch('/san-pham/{id}', [ProductController::class, 'update']);
-
-route::get('/san-pham-moi',[ProductController::class,'getNewProducts']);
-Route::get('/san-pham-khuyen-mai', [ProductController::class, 'hotPromotion']);
-
-
-route::resource('user',UserController::class);
-route::get('user',[UserController::class,"index"]);
-route::get('user/{id}',[UserController::class,"show"]);
-route::post('user',[UserController::class,"register"]);
-route::put('user/{id}',[UserController::class,"update"]);
-route::delete('user/{id}',[UserController::class,"destroy"]);
-
-Route::middleware('auth:sanctum')->group(function () {
+    // Giỏ hàng
     Route::get('/cart', [CartController::class, 'getCartItems']);
     Route::post('/cart', [CartController::class, 'store']);
     Route::put('/cart/{id}', [CartController::class, 'update']);
     Route::delete('/cart/{id}', [CartController::class, 'destroy']);
 });
-
-Route::middleware('auth:sanctum')->post('/checkout', [OrderController::class, 'checkout']);
-

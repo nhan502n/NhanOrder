@@ -37,12 +37,23 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const res = await axios.post('http://127.0.0.1:8000/api/register', {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password
+      // Gọi csrf cookie trước
+      await axios.get('http://127.0.0.1:8000/sanctum/csrf-cookie', {
+        withCredentials: true,
       });
-      setMessage(res.data.message);
+
+      const res = await axios.post(
+        'http://127.0.0.1:8000/api/register',
+        {
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+      setMessage(res.data.message || 'Đăng ký thành công');
       setFormData({ name: '', email: '', password: '' });
     } catch (err: any) {
       if (err.response?.data?.error) {
@@ -100,7 +111,9 @@ export default function RegisterPage() {
                   value={formData.password}
                   onChange={handleChange}
                 />
-                {error?.password && <div className="error">{error.password[0]}</div>}
+                {error?.password && (
+                  <div className="error">{error.password[0]}</div>
+                )}
 
                 {message && <div className="text-green-600 mt-2">{message}</div>}
                 <button type="submit" disabled={loading} name="dangky">

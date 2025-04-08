@@ -14,10 +14,6 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->references('id')->on('users');
-            $table->string('email');
-            $table->string('phone', 20);
-            $table->string('address', 255);
-            $table->string('note', 255);
             $table->enum('payment_method',['COD','walet','banking','cart'])->default('COD');
             $table->enum('payment_status',['pending','done'])->default('pending');
             $table->enum('status',['pending','shipping','success','cancel'])->default('pending');
