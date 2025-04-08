@@ -167,7 +167,7 @@ export default function CartPage() {
                                         <button id="checkout">Không Có Sản Phẩm</button>
                                     ) : (
                                         <button id="checkout">
-                                            <Link href="/kiem_tra_thanh_toan" style={{ color: "white" }}>
+                                            <Link href="/thanh-toan" style={{ color: "white" }}>
                                                 Thanh toán
                                             </Link>
                                         </button>
