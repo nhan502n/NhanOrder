@@ -69,7 +69,6 @@ Route::patch('/san-pham/{id}', [ProductController::class, 'update']);
 route::get('/san-pham-moi',[ProductController::class,'getNewProducts']);
 Route::get('/san-pham-khuyen-mai', [ProductController::class, 'hotPromotion']);
 
-route::post('order',[OrderController::class,'add']);
 
 route::resource('user',UserController::class);
 route::get('user',[UserController::class,"index"]);
@@ -84,4 +83,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/cart/{id}', [CartController::class, 'update']);
     Route::delete('/cart/{id}', [CartController::class, 'destroy']);
 });
+
+Route::middleware('auth:sanctum')->post('/checkout', [OrderController::class, 'checkout']);
 
