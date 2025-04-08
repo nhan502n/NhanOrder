@@ -44,4 +44,4 @@ frontend/
 ├── next.config.js         # Cấu hình Next.js
 ├── tsconfig.json          # Cấu hình TypeScript
 ├── package.json           # Thông tin package, dependencies
-└── README.md              # <-----------------------------------Bạn đang ở đây
+└── README.md              # <-----------------------------------Bạn đang ở đây.
