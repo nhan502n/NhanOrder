@@ -40,10 +40,15 @@ const LoginPage = () => {
         password: formData.Pass
       });
 
-      // Đăng nhập thành công
+      // ✅ Lưu token và userId để dùng cho giỏ hàng hoặc API khác
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('userId', res.data.user.id);
+
       setMessage('Đăng nhập thành công!');
       console.log('Thông tin người dùng:', res.data.user);
-      // Có thể chuyển hướng sang trang dashboard ở đây
+
+      // ✅ Chuyển hướng nếu cần
+      // router.push("/asm/dashboard");
 
     } catch (err: any) {
       if (err.response?.status === 403) {
@@ -70,7 +75,7 @@ const LoginPage = () => {
             <div className="form-register">
               <form onSubmit={handleSubmit}>
                 <div className="dangnhap">
-                <div className="Register" style={{ fontWeight: 'bolder' }}>
+                  <div className="Register" style={{ fontWeight: 'bolder' }}>
                     Đăng Nhập
                   </div>
                   <label htmlFor="Log-Reg">
@@ -78,7 +83,6 @@ const LoginPage = () => {
                       <div className="Login">Đăng Ký</div>
                     </a>
                   </label>
-                  
                 </div>
 
                 <p>Email</p>

@@ -1,116 +1,92 @@
 <?php
-
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use App\Models\Cart;
 use App\Models\Product;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Validator;
-use League\CommonMark\Delimiter\Bracket;
-use PhpParser\Node\Stmt\Break_;
 
 class CartController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    // Lấy giỏ hàng của user
+    public function getCartItems(Request $request)
     {
-        return view('cart.index');
+        $user = $request->user();
+
+        $carts = Cart::with('product')
+            ->where('user_id', $user->id)
+            ->get();
+
+        return response()->json($carts);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    // Thêm sản phẩm vào giỏ
+    public function store(Request $request)
     {
-        //
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        $user = $request->user();
+        $productId = $request->input('product_id');
+        $quantity = $request->input('quantity');
+
+        // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
+        $existingItem = Cart::where('user_id', $user->id)
+            ->where('product_id', $productId)
+            ->first();
+
+        if ($existingItem) {
+            $existingItem->quantity += $quantity;
+            $existingItem->save();
+        } else {
+            $product = Product::findOrFail($productId);
+
+            Cart::create([
+                'user_id' => $user->id,
+                'product_id' => $productId,
+                'quantity' => $quantity,
+                'price' => $product->price, // hoặc sale_price nếu cần
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Đã thêm vào giỏ hàng thành công!',
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
 
 
-     public function store(Request $request)
-     {
-         // Kiểm tra nếu user chưa đăng nhập
-         if (!Auth::check()) {
-             return response()->json(['error' => 'Bạn cần đăng nhập để thêm vào giỏ hàng.'], 401);
-         }
-
-         // Lấy user ID từ auth
-         $userId = Auth::id();
-
-         // Kiểm tra đầu vào
-         $request->validate([
-             'product_id' => 'required|exists:products,id',
-             'quantity' => 'required|integer|min:1'
-         ]);
-
-         // Tìm sản phẩm
-         $product = Product::find($request->product_id);
-
-         // Kiểm tra sản phẩm đã có trong giỏ hàng chưa
-         $cartItem = Cart::where('user_id', $userId)
-                         ->where('product_id', $request->product_id)
-                         ->first();
-
-         if ($cartItem) {
-             // Nếu đã có, tăng số lượng
-             $cartItem->quantity += $request->quantity;
-             $cartItem->save();
-         } else {
-             // Nếu chưa có, thêm mới
-             $cartItem = Cart::create([
-                 'user_id' => $userId,
-                 'product_id' => $request->product_id,
-                 'quantity' => $request->quantity,
-                 'price' => $product->price
-             ]);
-         }
-
-         return response()->json([
-             'message' => 'Sản phẩm đã được thêm vào giỏ hàng!',
-             'cart' => $cartItem
-         ], 201);
-     }
-
-
-
-
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    // Cập nhật số lượng
+    public function update(Request $request, $id)
     {
-        //
+        $cart = Cart::where('id', $id)
+            ->where('user_id', $request->user()->id)
+            ->firstOrFail();
+
+        $request->validate([
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        $cart->quantity = $request->quantity;
+        $cart->save();
+
+        return response()->json($cart);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+
+    // Xoá sản phẩm khỏi giỏ
+    public function destroy(Request $request, $id)
     {
-        //
+        $cart = Cart::where('id', $id)
+            ->where('user_id', $request->user()->id)
+            ->firstOrFail();
+
+        $cart->delete();
+
+        return response()->json(['message' => 'Xóa thành công']);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
 }

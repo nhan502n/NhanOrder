@@ -78,7 +78,10 @@ route::post('user',[UserController::class,"register"]);
 route::put('user/{id}',[UserController::class,"update"]);
 route::delete('user/{id}',[UserController::class,"destroy"]);
 
-route::get('cart',[CartController::class,"show"]);
-Route::middleware('auth:api')->post('/cart', [CartController::class, 'store']);
-route::put('cart/{id}',[CartController::class,"update"]);
-route::delete('cart/{id}',[CartController::class,"destroy"]);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/cart', [CartController::class, 'getCartItems']);
+    Route::post('/cart', [CartController::class, 'store']);
+    Route::put('/cart/{id}', [CartController::class, 'update']);
+    Route::delete('/cart/{id}', [CartController::class, 'destroy']);
+});
+

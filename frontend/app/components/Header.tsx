@@ -33,7 +33,7 @@ export default function Header({ user }: { user?: { id: number; name: string; ro
 
                 {/* Phone, Cart, User */}
                 <div className="header-actions">
-                    <a href="tel:18006800" className="header-link">Gọi mua: 1800.6800 (Miễn phí)</a>
+                    <a href="tel:18006800" className="header-link">Gọi mua: (+84) 358 93 7695</a>
 
                     <Link href="/gio-hang" className="header-link">
                         <i className="fa-solid fa-cart-shopping" style={{ marginRight: 5 }}></i>

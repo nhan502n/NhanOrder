@@ -17,7 +17,7 @@ class UserController extends Controller
 {
     public function login(Request $request)
     {
-        // Validate thông tin đăng nhập
+        // Validate thông tin đầu vào
         $request->validate([
             'email' => 'required|email',
             'password' => 'required'
@@ -25,18 +25,24 @@ class UserController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        // Kiểm tra thông tin đăng nhập
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['error' => 'Email hoặc mật khẩu không đúng'], 401);
         }
 
-        // Kiểm tra xác minh email
         if (is_null($user->email_verified_at)) {
             return response()->json(['error' => 'Tài khoản chưa được xác minh. Vui lòng kiểm tra email.'], 403);
         }
 
+        // ✅ TẠO TOKEN nếu đã xác minh
+        try {
+            $token = $user->createToken('web')->plainTextToken;
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Không thể tạo token.'], 500);
+        }
+
         return response()->json([
-            'user' => $user
+            'user' => $user,
+            'token' => $token,
         ], 200);
     }
 
