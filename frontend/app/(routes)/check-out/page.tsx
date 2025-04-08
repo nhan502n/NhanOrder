@@ -14,6 +14,7 @@ export default function ThanhToanPage() {
         note: "",
         payment: "1",
     });
+
     const router = useRouter();
 
     useEffect(() => {
@@ -67,19 +68,35 @@ export default function ThanhToanPage() {
             body: JSON.stringify(form),
         })
             .then((res) => res.json())
-            .then((data) => {
+            .then(() => {
+                const confirmData = {
+                    form,
+                    cartItems,
+                    total: cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+                };
+                localStorage.setItem("orderConfirm", JSON.stringify(confirmData));
                 alert("✅ Đặt hàng thành công!");
-                router.push("/xac-nhan");
+                router.push("/thanh-toan/xac-nhan-dat-hang");
             })
             .catch(() => alert("❌ Có lỗi xảy ra"));
     };
 
     const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
+    const getPaymentLabel = (payment: string) => {
+        switch (payment) {
+            case "1": return "Tiền mặt";
+            case "2": return "VNPay";
+            case "3": return "Momo";
+            case "4": return "PayOS";
+            default: return "Không rõ";
+        }
+    };
+
     return (
         <main>
             <div className="container">
-                <div className="Box-bill">
+                <div className="checkout-box-bill">
                     <div className="cart-process">
                         <div className="cart-process-child">
                             <i className="fa-solid fa-cart-shopping" style={{ color: "#fff", backgroundColor: "#066EFF" }} />
@@ -95,14 +112,12 @@ export default function ThanhToanPage() {
                         </div>
                     </div>
 
-                    <div className="col6">
+                    <div className="check-out-col6">
                         <form onSubmit={handleSubmit} id="thanh_toan">
                             <h2 style={{ marginBottom: "20px" }}>
                                 Điền thông tin thanh toán
                                 <span style={{ float: "right", fontSize: 18, paddingTop: 5, fontWeight: 100 }}>
-                                    <a style={{ color: "red" }} href="/xoa-thong-tin">
-                                        Xóa thông tin
-                                    </a>
+                                    <a style={{ color: "red" }} href="/xoa-thong-tin">Xóa thông tin</a>
                                 </span>
                             </h2>
 
@@ -125,44 +140,58 @@ export default function ThanhToanPage() {
                             <textarea name="note" value={form.note} onChange={handleChange}></textarea>
 
                             <p>Phương Thức Thanh Toán:</p>
-                            <label className="Payment-Bill">
-                                Tiền Mặt
-                                <input type="radio" name="payment" value="1" checked={form.payment === "1"} onChange={handleChange} />
-                            </label>
+                            <div className="checkout-payment-options">
+                                {["1", "2", "3", "4"].map((val) => (
+                                    <label key={val} className="checkout-payment-bill">
+                                        <input
+                                            type="radio"
+                                            name="payment"
+                                            value={val}
+                                            checked={form.payment === val}
+                                            onChange={handleChange}
+                                        />
+                                        {getPaymentLabel(val)}
+                                    </label>
+                                ))}
+                            </div>
 
                             <input type="submit" value="Đặt hàng" id="checkout" />
                         </form>
                     </div>
 
-                    <div className="col3">
-                        <div id="product-cart">
+                    <div className="checkout-col3">
+                        <div className="checkout-product-cart">
+                            <h2>Đơn hàng của bạn</h2>
                             {cartItems.length === 0 ? (
                                 <h2 style={{ textAlign: "center", lineHeight: "80px" }}>Giỏ hàng của bạn đang trống</h2>
                             ) : (
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <td className="cart-name-product">Tên Sản Phẩm</td>
-                                            <td className="cart-col-product">Giá</td>
-                                            <td className="cart-col-product">Số lượng</td>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {cartItems.map((item, index) => (
-                                            <tr key={index}>
-                                                <td className="cart-name-product">{item.product.name}</td>
-                                                <td className="cart-col-product">
-                                                    {item.price.toLocaleString("vi-VN")}đ
-                                                </td>
-                                                <td className="cart-col-product">{item.quantity}</td>
+                                <>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <td className="checkout-name-product">Tên Sản Phẩm</td>
+                                                <td className="checkout-col-product">Giá</td>
+                                                <td className="checkout-col-product">Số lượng</td>
                                             </tr>
-                                        ))}
-                                        <tr>
-                                            <td>Tổng cộng:</td>
-                                            <td colSpan={2} id="tongtien">{total.toLocaleString("vi-VN")}đ</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {cartItems.map((item, index) => (
+                                                <tr key={index}>
+                                                    <td className="checkout-name-product">{item.product.name}</td>
+                                                    <td className="checkout-col-product">{item.price.toLocaleString("vi-VN")}đ</td>
+                                                    <td className="checkout-col-product">{item.quantity}</td>
+                                                </tr>
+                                            ))}
+                                            <tr>
+                                                <td>Tổng cộng:</td>
+                                                <td colSpan={2} id="tongtien">{total.toLocaleString("vi-VN")}đ</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div className="checkout-payment-method-display" style={{ marginTop: "20px" }}>
+                                        <p><strong>Phương thức thanh toán:</strong> {getPaymentLabel(form.payment)}</p>
+                                    </div>
+                                </>
                             )}
                         </div>
                     </div>
