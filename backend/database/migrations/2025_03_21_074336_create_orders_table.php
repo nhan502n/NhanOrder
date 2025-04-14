@@ -14,7 +14,11 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->references('id')->on('users');
-            $table->enum('payment_method',['COD','walet','banking','cart'])->default('COD');
+            $table->string('email', 255);
+            $table->string('phone', 20);
+            $table->string('address', 255);
+            $table->string('note');
+            $table->enum('payment_method', ['COD', 'vnpay', 'momo', 'payos'])->default('COD');
             $table->enum('payment_status',['pending','done'])->default('pending');
             $table->enum('status',['pending','shipping','success','cancel'])->default('pending');
             $table->timestamps();

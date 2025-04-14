@@ -31,7 +31,7 @@ export default function NewProducts() {
             router.push("/dang-nhap");
             return;
         }
-
+    
         try {
             const res = await fetch("http://localhost:8000/api/cart", {
                 method: "POST",
@@ -44,18 +44,28 @@ export default function NewProducts() {
                     quantity: 1,
                 }),
             });
-
-            const data = await res.json();
-            if (res.ok) {
-                alert("🛒 " + data.message);
+    
+            // Kiểm tra phản hồi có phải JSON hợp lệ không
+            const contentType = res.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                const data = await res.json();
+                if (res.ok) {
+                    alert("🛒 " + data.message);
+                } else {
+                    alert("❌ Lỗi: " + (data.message || "Không thể thêm vào giỏ hàng"));
+                }
             } else {
-                alert("❌ Lỗi: " + (data.message || "Không thể thêm vào giỏ hàng"));
+                const text = await res.text();
+                console.error("❌ Server không trả về JSON:", text);
+                alert("❌ Có lỗi xảy ra: phản hồi không hợp lệ từ server.");
             }
         } catch (error) {
             console.error("Lỗi khi thêm vào giỏ hàng:", error);
             alert("❌ Có lỗi xảy ra khi thêm vào giỏ hàng.");
         }
     };
+    
+    
 
     return (
         <div className="layout-product-type">

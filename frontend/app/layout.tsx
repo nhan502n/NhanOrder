@@ -6,7 +6,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 // import "@/public/css/tiny-slider.css";
 // import "@/public/css/glightbox.min.css";
 // import "@/public/css/main.css";
-import "@/public/css/style.css";
+import "@/styles/style.css";
 import "@/styles/all.css";
 
 
@@ -36,7 +36,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {children}
         <Script src="/js/tiny-slider.js" strategy="afterInteractive" />
         <Script src="/js/glightbox.min.js" strategy="afterInteractive" />
-        <Script src="/js/main.js" strategy="afterInteractive" />
       </body>
     </html>
   );

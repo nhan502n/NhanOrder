@@ -93,7 +93,9 @@
 
         <p>Vui lòng nhấp vào liên kết dưới đây để xác minh email của bạn và hoàn tất việc đăng ký:</p>
 
-        <a href="{{ $url }}" class="btn">Đi đến xác minh</a>
+        <div style="text-align: center;">
+            <a href="{{ $url }}" class="btn" style="color: #fff;">Đi đến xác minh</a>
+        </div>
 
         <p>Nếu bạn không yêu cầu tạo tài khoản, vui lòng bỏ qua email này.</p>
 

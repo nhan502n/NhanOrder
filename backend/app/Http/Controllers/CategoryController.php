@@ -21,14 +21,30 @@ class CategoryController extends Controller
     }
     public function store(Request $request)
     {
-        $category=new Category();
-        $category->name=$request->name;
-        $category->image=$request->image;
-        $category->description=$request->description;
-        $category->save();
-        return response()->json($category,201);
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp',
+            'description' => 'nullable|string',
+            'parent_id' => 'nullable|exists:categories,id',
+        ]);
 
+        $imageName = null;
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $image->move(public_path('img'), $imageName);
+        }
+
+        $category = new Category();
+        $category->name = $request->name;
+        $category->image = $imageName;
+        $category->description = $request->description;
+        $category->parent_id = $request->parent_id;
+        $category->save();
+
+        return response()->json($category, 201);
     }
+
     public function destroy(string $id){
         $category = Category::find($id);
         if (!$category) {
@@ -39,7 +55,8 @@ class CategoryController extends Controller
         }
 
     }
-    public function update(Request $request, string $id) {
+    public function update(Request $request, string $id)
+    {
         $category = Category::find($id);
 
         if (!$category) {
@@ -50,25 +67,24 @@ class CategoryController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
-            'image' => 'sometimes|string',
-            'description' => 'sometimes|string',
+            'description' => 'sometimes|string|nullable',
+            'parent_id' => 'nullable|integer|exists:categories,id',
+            'image' => 'sometimes|file|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'error' => $validator->errors()
-            ], 400);
+            return response()->json(['error' => $validator->errors()], 400);
         }
 
-        // Cập nhật nếu có giá trị mới
-        if ($request->has('name')) {
-            $category->name = $request->name;
-        }
-        if ($request->has('image')) {
-            $category->image = $request->image;
-        }
-        if ($request->has('description')) {
-            $category->description = $request->description;
+        if ($request->has('name')) $category->name = $request->name;
+        if ($request->has('description')) $category->description = $request->description;
+        if ($request->has('parent_id')) $category->parent_id = $request->parent_id;
+
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $image->move(public_path('img'), $imageName);
+            $category->image = $imageName;
         }
 
         $category->save();
@@ -78,5 +94,6 @@ class CategoryController extends Controller
             'category' => $category
         ], 200);
     }
+
 
 }

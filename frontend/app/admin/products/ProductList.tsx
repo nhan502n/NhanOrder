@@ -29,75 +29,107 @@ export default function ProductList({ products, pageNum, limit, total }: Props) 
     const totalPage = Math.ceil(total / limit);
 
     return (
-        <div className="container">
-            <h2 className="Title-Page-Main">Quản Lý Sản Phẩm</h2>
-            <div className="manager-product-container">
+        <main className="container">
+            <h1 className="title-page">Quản lý Sản phẩm</h1>
 
-                <Link className="Them_san_pham" href="/admin/them-san-pham">Thêm Sản Phẩm</Link>
+            <Link className="btn-add" href="/admin/them-san-pham">
+                Thêm Sản Phẩm
+            </Link>
 
-                <table border={1}>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Hình Ảnh</th>
-                            <th>Tên Sản Phẩm</th>
-                            <th>Danh Mục</th>
-                            <th>Giá</th>
-                            <th>Số Lượng Trong Kho</th>
-                            <th>Thao Tác</th>
+            <table className="category-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Hình Ảnh</th>
+                        <th>Tên Sản Phẩm</th>
+                        <th>Danh Mục</th>
+                        <th>Giá</th>
+                        <th>Số Lượng Trong Kho</th>
+                        <th>Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {Array.isArray(products) && products.map((product) => (
+                        <tr key={product.id}>
+                            <td>{product.id}</td>
+                            <td>
+                                <Image
+                                    className="category-image"
+                                    src={`http://localhost:8000/api/image/${product.image}`}
+                                    alt={product.name}
+                                    width={100}
+                                    height={100}
+                                    unoptimized
+                                />
+                            </td>
+                            <td>{product.name}</td>
+                            <td>{product.category?.name || 'Chưa phân loại'}</td>
+                            <td>
+                                {product.sale_price ? (
+                                    <>
+                                        <span style={{ color: 'red', fontWeight: 'bold' }}>
+                                            {product.sale_price.toLocaleString()} VNĐ
+                                        </span><br />
+                                        <del>{product.price.toLocaleString()} VNĐ</del>
+                                    </>
+                                ) : (
+                                    <>{product.price.toLocaleString()} VNĐ</>
+                                )}
+                            </td>
+                            <td>{product.quantity}</td>
+                            <td>
+                                <Link
+                                    className="btn-edit"
+                                    href={`/admin/sua-san-pham/${product.id}`}
+                                    onClick={() => {
+                                        localStorage.setItem('selectedProduct', JSON.stringify(product));
+                                    }}
+                                >
+                                    <i className="fa-solid fa-pen-to-square"></i>
+                                </Link>
+                                <button
+                                    className="btn-delete"
+                                    onClick={() => handleDelete(product.id)}
+                                >
+                                    <i className="fa-solid fa-trash-can"></i>
+                                </button>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {Array.isArray(products) && products.map((product, index) => (
-                            <tr key={product.id}>
-                                <td>{product.id}</td>
-                                <td>
-                                    <Image
-                                        src={`http://localhost:8000/api/image/${product.image}`}
-                                        alt={product.name}
-                                        width={100}
-                                        height={100}
-                                        unoptimized
-                                    />
-                                </td>
-                                <td>{product.name}</td>
-                                <td>{product.category?.name || 'Chưa phân loại'}</td>
-                                <td>
-                                    {product.sale_price ? (
-                                        <>
-                                            <span style={{ color: 'red', fontWeight: 'bold' }}>
-                                                {product.sale_price.toLocaleString()} VNĐ
-                                            </span><br />
-                                            <del>{product.price.toLocaleString()} VNĐ</del>
-                                        </>
-                                    ) : (
-                                        <>{product.price.toLocaleString()} VNĐ</>
-                                    )}
-                                </td>
-                                <td>{product.quantity}</td>
-                                <td>
-                                    <Link href={`/admin/sua-san-pham/${product.id}`}>
-                                        <i className="fa-solid fa-pen-to-square"></i>
-                                    </Link>{" "}
-                                    |{" "}
-                                    <Link href={`/admin/xoa-san-pham/${product.id}`} onClick={(e) => { if (!confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) e.preventDefault(); }}>
-                                        <i className="fa-solid fa-trash-can" style={{ color: 'red' }}></i>
-                                    </Link>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-
-                {/* Pagination */}
-                <div className="pagination">
-                    {Array.from({ length: totalPage || 1 }, (_, i) => (
-                        <Link key={i + 1} className={pageNum === i + 1 ? 'Select' : ''} href={`/admin/quan-ly-san-pham?page=${i + 1}`}>
-                            {i + 1}
-                        </Link>
                     ))}
-                </div>
+                </tbody>
+            </table>
+
+            {/* Phân trang */}
+            <div className="pagination">
+                {Array.from({ length: totalPage || 1 }, (_, i) => (
+                    <Link
+                        key={i + 1}
+                        className={pageNum === i + 1 ? 'active' : ''}
+                        href={`/admin/quan-ly-san-pham?page=${i + 1}`}
+                    >
+                        {i + 1}
+                    </Link>
+                ))}
             </div>
-        </div>
+        </main>
     );
 }
+
+// Hàm xóa sản phẩm
+const handleDelete = async (id: number) => {
+    if (!confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) return;
+
+    try {
+        const res = await fetch(`http://localhost:8000/api/product/${id}`, {
+            method: "DELETE",
+        });
+        if (res.ok) {
+            alert("Xóa sản phẩm thành công!");
+            location.reload();
+        } else {
+            alert("Xóa thất bại!");
+        }
+    } catch (error) {
+        console.error("Lỗi khi xóa sản phẩm:", error);
+    }
+};

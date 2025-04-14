@@ -5,7 +5,6 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Request as FacadesRequest;
 
 class CorsMiddleware
 {
@@ -16,7 +15,7 @@ class CorsMiddleware
      * @param  \Closure  $next
      * @return mixed
      */
-    public function handle(FacadesRequest $request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
         $response = $next($request);
 

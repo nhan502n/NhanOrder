@@ -11,13 +11,11 @@ use Illuminate\Support\Facades\Validator;
 use Laravel\Sanctum\PersonalAccessToken;
 use Illuminate\Support\Str;
 use App\Mail\VerifyEmail;
-use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
     public function login(Request $request)
     {
-        // Validate thông tin đầu vào
         $request->validate([
             'email' => 'required|email',
             'password' => 'required'
@@ -33,7 +31,6 @@ class UserController extends Controller
             return response()->json(['error' => 'Tài khoản chưa được xác minh. Vui lòng kiểm tra email.'], 403);
         }
 
-        // ✅ TẠO TOKEN nếu đã xác minh
         try {
             $token = $user->createToken('web')->plainTextToken;
         } catch (\Exception $e) {
@@ -46,7 +43,6 @@ class UserController extends Controller
         ], 200);
     }
 
-
     public function index(){
         $userList = User::all();
         return response()->json($userList);
@@ -55,21 +51,6 @@ class UserController extends Controller
         $user = User::find($id);
         return response()->json($user);
     }
-    public function verifyEmail($token)
-    {
-        $user = User::where('verify_token', $token)->first();
-
-        if (!$user) {
-            return response()->json(['message' => 'Token không hợp lệ hoặc đã được xác minh.'], 400);
-        }
-
-        $user->email_verified_at = now(); // Đánh dấu email đã xác minh
-        $user->verify_token = null; // Xóa token sau khi xác minh
-        $user->save();
-
-        return response()->json(['message' => 'Xác minh email thành công!'], 200);
-    }
-
     public function confirm($userId, $token, Request $request)
     {
         // Giải mã userId từ base64
@@ -105,7 +86,7 @@ class UserController extends Controller
             $user->verify_token = null; // Xóa token
             $user->save();
 
-            return view('emails.verify_result');
+            return view('emails.verify_result',['message' => 'Xác minh thất bại!']);
         }
 
         return view('emails.verify_result', ['message' => 'Token không hợp lệ.']);
@@ -154,17 +135,6 @@ class UserController extends Controller
 
 
 
-
-
-
-
-
-
-
-
-
-
-
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -206,9 +176,6 @@ class UserController extends Controller
 
         return response()->json(['message' => 'Đăng ký thành công! Kiểm tra email để xác nhận.', 'user' => $user], 201);
     }
-
-
-
 
     public function update(Request $request, string $id) {
         $user = User::find($id);

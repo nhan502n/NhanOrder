@@ -1,5 +1,5 @@
 "use client";
-import "@/public/css/admin.css";
+import "@/styles/admin.css";
 import { useEffect, useState } from "react";
 import Chart from "chart.js/auto";
 

@@ -9,7 +9,7 @@ export default function CategoriesPage() {
     const limit = 5; // Số danh mục mỗi trang
 
     useEffect(() => {
-        fetch(`http://localhost:8000/api/danh-muc-san-pham?page=${page}&limit=${limit}`)
+        fetch(`http://localhost:8000/api/category?page=${page}&limit=${limit}`)
             .then((res) => res.json())
             .then((data) => {
                 setCategories(data.data);
@@ -50,8 +50,16 @@ export default function CategoriesPage() {
                                 />
                             </td>
                             <td>
-                                <Link className="btn-edit" href={`/admin/categories/edit/${category.id}`}>
-                                    <i className="fa-solid fa-pen-to-square"></i>
+                            <Link
+                                className="btn-edit"
+                                href={`/admin/sua-danh-muc-san-pham/${category.id}`}
+                                onClick={() => {
+                                    localStorage.setItem('selectedCategory', JSON.stringify(category));
+                                    localStorage.setItem('categories', JSON.stringify(categories));
+                                }}
+                            >
+
+                            <i className="fa-solid fa-pen-to-square"></i>
                                 </Link>
                                 <button
                                     className="btn-delete"
@@ -86,7 +94,7 @@ const handleDelete = async (id: number) => {
     if (!confirm("Bạn có chắc chắn muốn xóa danh mục này?")) return;
 
     try {
-        const res = await fetch(`http://localhost:8000/api/categories/${id}`, {
+        const res = await fetch(`http://localhost:8000/api/category/${id}`, {
             method: "DELETE",
         });
         if (res.ok) {

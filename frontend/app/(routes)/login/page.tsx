@@ -7,8 +7,8 @@ import axios from 'axios';
 const LoginPage = () => {
   const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    Email: '',
+    Pass: ''
   });
 
   const [message, setMessage] = useState('');
@@ -35,28 +35,19 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      // Lấy CSRF cookie trước khi login
-      await axios.get('http://127.0.0.1:8000/sanctum/csrf-cookie', {
-        withCredentials: true,
+      const res = await axios.post('http://127.0.0.1:8000/api/login', {
+        email: formData.Email,
+        password: formData.Pass
       });
 
-      const res = await axios.post(
-        'http://127.0.0.1:8000/api/login',
-        {
-          email: formData.email,
-          password: formData.password
-        },
-        {
-          withCredentials: true
-        }
-      );
-
+      // ✅ Lưu token và userId để dùng cho giỏ hàng hoặc API khác
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('userId', res.data.user.id);
 
       setMessage('Đăng nhập thành công!');
       console.log('Thông tin người dùng:', res.data.user);
 
+      // ✅ Chuyển hướng nếu cần
       // router.push("/asm/dashboard");
 
     } catch (err: any) {
@@ -98,8 +89,8 @@ const LoginPage = () => {
                 <input
                   type="text"
                   placeholder="Email:"
-                  name="email"
-                  value={formData.email}
+                  name="Email"
+                  value={formData.Email}
                   onChange={handleChange}
                 />
 
@@ -107,8 +98,8 @@ const LoginPage = () => {
                 <input
                   type="password"
                   placeholder="Mật Khẩu:"
-                  name="password"
-                  value={formData.password}
+                  name="Pass"
+                  value={formData.Pass}
                   onChange={handleChange}
                 />
 

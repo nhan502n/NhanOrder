@@ -20,6 +20,10 @@
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+        .email-wrapper > p{
+            text-align: center;
+            font-weight: bolder;
+        }
         h1 {
             color: #fff;
             font-size: 1.8rem;
@@ -62,8 +66,7 @@
         @if(isset($message))
             <p>{{ $message }}</p>
         @else
-            <p>Chúc mừng tài khoản của bạn đã được xác minh thành công.</p>
-            <p>Bây giờ bạn có thể sử dụng tài khoản của mình để đăng nhập và truy cập tất cả các tính năng của {{ config('app.name') }}. Chúng tôi vinh hạnh được phục vụ bạn.</p>
+            <p>Lỗi không có thông báo</p>
         @endif
 
         <div class="footer">
